@@ -1,0 +1,38 @@
+name: Package Boshiamy IME
+
+on:
+  push:
+    paths:
+      - 'frontend/ui/data/keyboardlayouts/zh_boshiamy*'
+      - 'frontend/ui/language.lua'
+      - 'frontend/ui/widget/virtualkeyboard.lua'
+      - '.github/workflows/boshiamy-ime-package.yml'
+  pull_request:
+    paths:
+      - 'frontend/ui/data/keyboardlayouts/zh_boshiamy*'
+      - 'frontend/ui/language.lua'
+      - 'frontend/ui/widget/virtualkeyboard.lua'
+      - '.github/workflows/boshiamy-ime-package.yml'
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare installation package directory structure
+        run: |
+          mkdir -p dist/koreader/frontend/ui/data/keyboardlayouts
+          mkdir -p dist/koreader/frontend/ui/widget
+
+          cp frontend/ui/data/keyboardlayouts/zh_boshiamy_data.lua dist/koreader/frontend/ui/data/keyboardlayouts/
+          cp frontend/ui/data/keyboardlayouts/zh_boshiamy_keyboard.lua dist/koreader/frontend/ui/data/keyboardlayouts/
+          cp frontend/ui/language.lua dist/koreader/frontend/ui/
+          cp frontend/ui/widget/virtualkeyboard.lua dist/koreader/frontend/ui/widget/
+
+      - name: Upload Boshiamy IME package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: koreader-boshiamy-ime
+          path: dist/koreader/
