@@ -1,4 +1,5 @@
 local IME = require("ui/data/keyboardlayouts/generic_ime")
+local logger = require("logger")
 local util = require("util")
 local _ = require("gettext")
 
