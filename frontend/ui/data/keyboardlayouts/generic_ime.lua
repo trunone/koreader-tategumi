@@ -103,10 +103,19 @@ end
 
 function IME:clear_stack()
     _stack = { {code="", char="", index=1, candi={} } }
+    self._stack = _stack
     self.last_key = ""
     self.last_index = 0
     self.hint_char_count = 0
     self.on_stage_char_count = 0
+end
+
+function IME:getStack()
+    return _stack
+end
+
+function IME:getImex()
+    return _stack and _stack[#_stack]
 end
 
 function IME:reset_status()

@@ -35,19 +35,19 @@ ime.getHintChars = function(self)
     self.hint_char_count = 0
     self.on_stage_char_count = 0
     local hint_chars = ""
-    local imex = self._stack and self._stack[#self._stack] or { code = "", candi = {}, index = 1, char = "" }
+    local imex = self:getImex() or { code = "", candi = {}, index = 1, char = "" }
 
     if imex.code and #imex.code > 0 then
+        -- Display selected character candidate on stage if available
+        if imex.char and imex.char ~= "" then
+            hint_chars = hint_chars .. imex.char
+            self.on_stage_char_count = self.on_stage_char_count + #util.splitToChars(imex.char)
+        end
+
         -- Display composition roots (uppercase) in parentheses/brackets e.g. " (ABC)"
         local upper_code = imex.code:upper()
         hint_chars = hint_chars .. " (" .. upper_code .. ")"
         self.hint_char_count = self.hint_char_count + #upper_code + 3
-
-        -- Display selected character candidate if available
-        if imex.char and imex.char ~= "" then
-            hint_chars = hint_chars .. imex.char
-            self.hint_char_count = self.hint_char_count + #util.splitToChars(imex.char)
-        end
 
         -- Display other candidates if candidate list is available and enabled
         if self:show_candi_callback() and #imex.candi > 1 then
@@ -69,7 +69,7 @@ ime.getHintChars = function(self)
         end
     end
 
-    logger.dbg("zh_boshiamy_kbd: got hint chars:", hint_chars, "with count", self.hint_char_count)
+    logger.dbg("zh_boshiamy_kbd: got hint chars:", hint_chars, "with count", self.hint_char_count, "on stage count", self.on_stage_char_count)
     return hint_chars
 end
 
@@ -78,24 +78,24 @@ end
 local row2_keys = { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" }
 for idx, char in ipairs(row2_keys) do
     local key_entry = boshiamy_keyboard.keys[2][idx]
-    key_entry[1][1] = char
-    key_entry[2][1] = char
+    key_entry[1] = char
+    key_entry[2] = char
 end
 
 -- Row 3: A S D F G H J K L
 local row3_keys = { "A", "S", "D", "F", "G", "H", "J", "K", "L" }
 for idx, char in ipairs(row3_keys) do
     local key_entry = boshiamy_keyboard.keys[3][idx]
-    key_entry[1][1] = char
-    key_entry[2][1] = char
+    key_entry[1] = char
+    key_entry[2] = char
 end
 
 -- Row 4: Z X C V B N M
 local row4_keys = { "Z", "X", "C", "V", "B", "N", "M" }
 for idx, char in ipairs(row4_keys) do
     local key_entry = boshiamy_keyboard.keys[4][idx + 1] -- offset by 1 for shift key
-    key_entry[1][1] = char
-    key_entry[2][1] = char
+    key_entry[1] = char
+    key_entry[2] = char
 end
 
 -- Customize punctuation key popups
