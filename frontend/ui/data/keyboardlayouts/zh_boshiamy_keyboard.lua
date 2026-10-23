@@ -6,11 +6,20 @@ local _ = require("gettext")
 local boshiamy_keyboard = dofile("frontend/ui/data/keyboardlayouts/en_keyboard.lua")
 local SETTING_NAME = "keyboard_chinese_boshiamy_settings"
 
+-- Build key_map mapping both lowercase and uppercase letters (A-Z) and punctuation to internal codes
+local key_map = {}
+local keys_string = "abcdefghijklmnopqrstuvwxyz,.'[]"
+for i = 1, #keys_string do
+    local c = keys_string:sub(i, i)
+    key_map[c] = c
+    key_map[c:upper()] = c
+end
+
 local code_map = dofile("frontend/ui/data/keyboardlayouts/zh_boshiamy_data.lua")
 local settings = G_reader_settings:readSetting(SETTING_NAME, {show_candi=true})
 local ime = IME:new {
     code_map = code_map,
-    keys_string = "abcdefghijklmnopqrstuvwxyz,.'[]",
+    key_map = key_map,
     exact_match = true, -- Boshiamy matches exact input code for candidates
     partial_separators = {" "},
     show_candi_callback = function()
@@ -20,7 +29,32 @@ local ime = IME:new {
     switch_char_prev = "←",
 }
 
--- Customize punctuation key popups to suit Chinese / Boshiamy defaults if needed
+-- Make letter keys fixedly display uppercase letters (A-Z) on layers 1 and 2
+-- Row 2: Q W E R T Y U I O P
+local row2_keys = { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" }
+for idx, char in ipairs(row2_keys) do
+    local key_entry = boshiamy_keyboard.keys[2][idx]
+    key_entry[1][1] = char
+    key_entry[2][1] = char
+end
+
+-- Row 3: A S D F G H J K L
+local row3_keys = { "A", "S", "D", "F", "G", "H", "J", "K", "L" }
+for idx, char in ipairs(row3_keys) do
+    local key_entry = boshiamy_keyboard.keys[3][idx]
+    key_entry[1][1] = char
+    key_entry[2][1] = char
+end
+
+-- Row 4: Z X C V B N M
+local row4_keys = { "Z", "X", "C", "V", "B", "N", "M" }
+for idx, char in ipairs(row4_keys) do
+    local key_entry = boshiamy_keyboard.keys[4][idx + 1] -- offset by 1 for shift key
+    key_entry[1][1] = char
+    key_entry[2][1] = char
+end
+
+-- Customize punctuation key popups
 boshiamy_keyboard.keys[3][10][2] = {
     "，",
     north = "；",
