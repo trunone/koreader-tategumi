@@ -29,6 +29,49 @@ local ime = IME:new {
     switch_char_prev = "←",
 }
 
+-- Override getHintChars to display typed composition code / roots (組字字根)
+ime.getHintChars = function(self)
+    self.hint_char_count = 0
+    self.on_stage_char_count = 0
+    local hint_chars = ""
+    local imex = self._stack and self._stack[#self._stack] or { code = "", candi = {}, index = 1, char = "" }
+
+    if imex.code and #imex.code > 0 then
+        -- Display composition roots (uppercase) in parentheses/brackets e.g. " (ABC)"
+        local upper_code = imex.code:upper()
+        hint_chars = hint_chars .. " (" .. upper_code .. ")"
+        self.hint_char_count = self.hint_char_count + #upper_code + 3
+
+        -- Display selected character candidate if available
+        if imex.char and imex.char ~= "" then
+            hint_chars = hint_chars .. imex.char
+            self.hint_char_count = self.hint_char_count + #util.splitToChars(imex.char)
+        end
+
+        -- Display other candidates if candidate list is available and enabled
+        if self:show_candi_callback() and #imex.candi > 1 then
+            hint_chars = hint_chars .. "["
+            local pos = (imex.index % #imex.candi)
+            if pos == 0 then pos = #imex.candi end
+            for i = 1, math.min(#imex.candi - 1, 5) do
+                pos = pos == #imex.candi and 1 or pos + 1
+                local candi_char = imex.candi[pos]
+                hint_chars = hint_chars .. candi_char
+                self.hint_char_count = self.hint_char_count + #util.splitToChars(candi_char)
+            end
+            if #imex.candi > 6 then
+                hint_chars = hint_chars .. "…"
+                self.hint_char_count = self.hint_char_count + 1
+            end
+            hint_chars = hint_chars .. "]"
+            self.hint_char_count = self.hint_char_count + 2
+        end
+    end
+
+    logger.dbg("zh_boshiamy_kbd: got hint chars:", hint_chars, "with count", self.hint_char_count)
+    return hint_chars
+end
+
 -- Make letter keys fixedly display uppercase letters (A-Z) on layers 1 and 2
 -- Row 2: Q W E R T Y U I O P
 local row2_keys = { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" }
